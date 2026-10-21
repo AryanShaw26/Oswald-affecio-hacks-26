@@ -1,0 +1,45 @@
+/* Google Fonts — must precede @import "tailwindcss" */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+@import "tailwindcss";
+
+@theme {
+  /* Brand colors */
+  --color-brand-wine: #831843;
+  --color-brand-berry: #BE185D;
+  --color-brand-rose: #E11D48;
+  --color-brand-blush: #FFF1F2;
+  --color-brand-soft-pink: #FCE7F3;
+
+  /* Neutral */
+  --color-neutral-charcoal: #1F1720;
+  --color-neutral-muted: #9F7A89;
+
+  /* Status */
+  --color-status-safe: #16A34A;
+  --color-status-caution: #D97706;
+  --color-status-risk: #DC2626;
+
+  /* Font family */
+  --font-sans: 'Inter', 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-brand-blush);
+  color: var(--color-neutral-charcoal);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

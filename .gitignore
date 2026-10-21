@@ -1,0 +1,41 @@
+# Environment / secrets
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+backend/.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+*.egg-info/
+
+dist/
+build/
+
+# Node
+node_modules/
+frontend/dist/
+
+# Testing / reports
+tests/results/
+tests/reports/
+V1_TESTING.md
+**/V1_TESTING.md
+test-results/
+coverage/
+.pytest_cache/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs
+*.log
