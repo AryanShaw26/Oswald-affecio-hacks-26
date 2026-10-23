@@ -250,11 +250,11 @@ class TestSafetyTimeout:
 
     def test_timeout_handled(self, monkeypatch):
         from app.services import conversation_safety as cs
-        from openai import Timeout
+        from openai import APITimeoutError
 
         mock_client = MagicMock()
         mock_client.chat.completions.create.side_effect = \
-            Timeout("Timed out")
+            APITimeoutError("Timed out")
         monkeypatch.setattr(cs, "_create_client", lambda: mock_client)
 
         result = cs.analyze_message("Hello")

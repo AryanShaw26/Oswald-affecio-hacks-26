@@ -1,11 +1,16 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import useAuth from '../hooks/useAuth';
 
 const STEPS = ['Profile Basics', 'Your Interests', 'Privacy & Consent'];
 
 export default function Register() {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState({ name: '', email: '', password: '', interests: [], consent: false });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const { register } = useAuth();
 
   const INTERESTS = ['Travel', 'Music', 'Fitness', 'Books', 'Cooking', 'Art', 'Tech', 'Yoga', 'Photography', 'Gaming'];
 
@@ -20,6 +25,28 @@ export default function Register() {
 
   const next = () => setStep((s) => Math.min(s + 1, STEPS.length - 1));
   const back = () => setStep((s) => Math.max(s - 1, 0));
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!form.consent) return;
+    setError('');
+    setLoading(true);
+    try {
+      await register(form.name, form.email, form.password);
+      navigate('/chat');
+    } catch (err) {
+      const status = err.response?.status;
+      if (status === 400) {
+        setError('That email is already registered. Try signing in instead.');
+      } else if (status === 422) {
+        setError('Please fill in all required fields correctly.');
+      } else {
+        setError('Unable to create account. Please check your connection and try again.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#831843] flex items-center justify-center px-4 pt-16">
@@ -113,6 +140,12 @@ export default function Register() {
           </div>
         )}
 
+        {error && (
+          <p role="alert" className="text-sm text-[#DC2626] bg-red-50 rounded-xl px-4 py-2 border border-red-200 mt-4">
+            {error}
+          </p>
+        )}
+
         {/* Navigation */}
         <div className="flex gap-3 mt-8">
           {step > 0 && (
@@ -126,10 +159,11 @@ export default function Register() {
             </button>
           ) : (
             <button
-              disabled={!form.consent}
-              className="flex-1 py-3 rounded-full font-semibold text-white bg-gradient-to-r from-[#BE185D] to-[#E11D48] hover:brightness-110 transition-all disabled:opacity-50"
+              onClick={handleSubmit}
+              disabled={loading || !form.consent}
+              className="flex-1 py-3 rounded-full font-semibold text-white bg-gradient-to-r from-[#BE185D] to-[#E11D48] hover:brightness-110 active:scale-95 transition-all disabled:opacity-50"
             >
-              Create Account
+              {loading ? 'Creating account…' : 'Create Account'}
             </button>
           )}
         </div>

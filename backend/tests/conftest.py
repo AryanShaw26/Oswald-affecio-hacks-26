@@ -31,6 +31,15 @@ def override_get_db():
 
 app.dependency_overrides[get_db] = override_get_db
 
+# Ensure direct ``SessionLocal`` calls (used by some tests to assert
+# persistence) see the same in-memory SQLite database that the routes
+# write to.  Without this, ``SessionLocal`` would bind to the original
+# engine from ``app.core.database`` (no StaticPool) and committed rows
+# would be invisible.
+import app.core.database as _db_module  # noqa: E402
+_db_module.SessionLocal = TestingSessionLocal
+_db_module.engine = engine
+
 @pytest.fixture(scope="session", autouse=True)
 def create_test_database():
     # Start from a clean slate – drop any stale tables first (important
@@ -39,6 +48,16 @@ def create_test_database():
     Base.metadata.create_all(bind=engine)
     yield
     Base.metadata.drop_all(bind=engine)
+
+
+@pytest.fixture(autouse=True)
+def _clean_tables():
+    """Clear all row data after each test so tests don't leak state."""
+    yield
+    # Delete in reverse dependency order (children before parents)
+    with engine.begin() as conn:
+        for table in reversed(Base.metadata.sorted_tables):
+            conn.execute(table.delete())
 
 @pytest.fixture()
 def db():

@@ -19,7 +19,7 @@ import logging
 import os
 from typing import Optional
 
-from openai import OpenAI, APIError, RateLimitError, AuthenticationError, Timeout
+from openai import OpenAI, APIError, RateLimitError, AuthenticationError, APITimeoutError
 
 from app.core.config import settings
 
@@ -204,7 +204,7 @@ def analyze_message(message: str, user_id: Optional[int] = None) -> dict:
             "This message has not been flagged."
         )
         return fallback
-    except Timeout:
+    except APITimeoutError:
         logger.warning("OpenAI request timed out; returning fallback result")
         fallback = dict(_FALLBACK_RESULT)
         fallback["summary"] = (

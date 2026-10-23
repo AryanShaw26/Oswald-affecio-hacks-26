@@ -1,11 +1,14 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import api from '../services/api';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import useAuth from '../hooks/useAuth';
 
 export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -14,9 +17,19 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
-      // V2 will implement actual auth -- placeholder call
-      await new Promise((r) => setTimeout(r, 800));
-      setError('Authentication not yet implemented -- coming in V2.');
+      await login(form.email, form.password);
+      // Redirect to the page the user was trying to reach, or /chat
+      const from = location.state?.from?.pathname || '/chat';
+      navigate(from, { replace: true });
+    } catch (err) {
+      const status = err.response?.status;
+      if (status === 401) {
+        setError('Invalid email or password.');
+      } else if (status === 422) {
+        setError('Please enter a valid email and password.');
+      } else {
+        setError('Unable to sign in. Please check your connection and try again.');
+      }
     } finally {
       setLoading(false);
     }
