@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.database import Base, engine
-from app.api.routes import health, users, auth, profiles, trust
+from app.api.routes import health, users, auth, profiles, trust, safety, privacy
 
 
 # Create all tables on startup (V1 — Alembic migrations in later versions)
@@ -28,6 +28,8 @@ app.include_router(health.router)
 app.include_router(auth.router)
 app.include_router(profiles.router)
 app.include_router(trust.router)
+app.include_router(safety.router)
+app.include_router(privacy.router)
 
 
 @app.get("/", tags=["root"])

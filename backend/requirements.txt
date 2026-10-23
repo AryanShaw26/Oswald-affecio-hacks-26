@@ -36,5 +36,8 @@ email-validator==2.3.0
 # Testing
 pytest==9.1.1
 
+# AI / Conversation Safety (V4)
+openai==3.37.0
+
 # OpenTelemetry
 opentelemetry-api==1.45.1
