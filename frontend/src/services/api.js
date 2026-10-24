@@ -5,6 +5,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 15000,
 });
 
 // Request interceptor — attach auth token when available (V2+)
@@ -23,7 +24,20 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error('[TrustMatch API]', error.response?.status, error.message);
+    if (error.response) {
+      // Server responded with an error status
+      const { status, data } = error.response;
+      const detail = data?.detail || error.message;
+      // Don't log auth errors to console to avoid noise
+      if (status !== 401) {
+        console.error('[TrustMatch API]', status, detail);
+      }
+    } else if (error.request) {
+      // Request was made but no response received (network failure / timeout)
+      console.error('[TrustMatch API] Network error — no response received');
+    } else {
+      console.error('[TrustMatch API]', error.message);
+    }
     return Promise.reject(error);
   }
 );
@@ -64,6 +78,115 @@ export const checkPrivacy = async (message) => {
 export const getPrivacyAlerts = async () => {
   const res = await api.get('/privacy/alerts');
   return res.data; // array of PrivacyAlertRead
+};
+
+// ─── V6 — Safety Alerts ─────────────────────────────────────────
+export const getAlerts = async () => {
+  const res = await api.get('/alerts');
+  return res.data; // AlertRead[]
+};
+
+export const getUnreadAlerts = async () => {
+  const res = await api.get('/alerts/unread');
+  return res.data; // AlertRead[]
+};
+
+export const getUnreadAlertCount = async () => {
+  const res = await api.get('/alerts/unread-count');
+  return res.data; // { unread_count }
+};
+
+export const markAllAlertsRead = async () => {
+  const res = await api.post('/alerts/read');
+  return res.data; // { message }
+};
+
+export const getAlert = async (alertId) => {
+  const res = await api.get(`/alerts/${alertId}`);
+  return res.data; // AlertRead
+};
+
+// ─── V6 — Reports ───────────────────────────────────────────────
+export const createReport = async (reportedUserId, reportType, description, profileId = null) => {
+  const res = await api.post('/reports', {
+    reported_user_id: reportedUserId,
+    report_type: reportType,
+    description,
+    profile_id: profileId,
+  });
+  return res.data; // ReportRead
+};
+
+export const getMyReports = async () => {
+  const res = await api.get('/reports/mine');
+  return res.data; // ReportRead[]
+};
+
+export const getReportsForUser = async (userId) => {
+  const res = await api.get(`/reports/user/${userId}`);
+  return res.data; // ReportRead[]
+};
+
+// ─── V6 — Blocks ────────────────────────────────────────────────
+export const blockUser = async (blockedUserId, reason = null) => {
+  const res = await api.post('/blocks', {
+    blocked_user_id: blockedUserId,
+    reason,
+  });
+  return res.data; // BlockResponse { id, message, created_at }
+};
+
+export const getBlockedUsers = async () => {
+  const res = await api.get('/blocks');
+  return res.data; // BlockRead[]
+};
+
+export const getBlockedIds = async () => {
+  const res = await api.get('/blocks/ids');
+  return res.data; // int[]
+};
+
+export const unblockUser = async (targetId) => {
+  const res = await api.delete(`/blocks/${targetId}`);
+  return res.data; // { message }
+};
+
+export const checkBlock = async (targetId) => {
+  const res = await api.get(`/blocks/check/${targetId}`);
+  return res.data; // { target_id, is_blocked }
+};
+
+// ─── V6 — Dashboard ─────────────────────────────────────────────
+export const getDashboard = async () => {
+  const res = await api.get('/dashboard');
+  return res.data; // DashboardResponse
+};
+
+// ─── V3 — Trust Score ───────────────────────────────────────────
+export const getMyTrustScore = async () => {
+  const res = await api.get('/trust/me');
+  return res.data; // TrustScoreRead
+};
+
+export const getProfileTrustScore = async (profileId) => {
+  const res = await api.get(`/trust/profile/${profileId}`);
+  return res.data; // TrustScoreRead
+};
+
+export const analyzeProfileTrust = async (profileId) => {
+  const res = await api.post(`/trust/analyze/${profileId}`);
+  return res.data; // TrustScoreResponse { score, risk_level, explanation, factors }
+};
+
+// ─── V2 — Profiles ──────────────────────────────────────────────
+export const getMyProfile = async () => {
+  const res = await api.get('/profiles/me');
+  return res.data; // ProfileRead
+};
+
+export const getProfile = async (profileId) => {
+  const res = await api.get(`/profiles/${profileId}`);
+  return res.data; // ProfileRead
 };
 
 export default api;

@@ -13,3 +13,7 @@ from app.schemas.privacy_alert import (
     PrivacyResult,
     PrivacyAlertRead,
 )
+from app.schemas.reports import ReportCreate, ReportRead, ReportResponse
+from app.schemas.blocks import BlockCreate, BlockRead, BlockResponse
+from app.schemas.alerts import AlertRead, AlertResponse
+from app.schemas.dashboard import DashboardResponse
