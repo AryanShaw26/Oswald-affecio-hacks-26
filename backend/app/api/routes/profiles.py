@@ -9,7 +9,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.models.connection import Connection
 from app.models.profile import Profile, Interest, profile_interests
+from app.models.trust_score import TrustScore
 from app.models.user import User
 from app.schemas.profile import ProfileCreate, ProfileRead, ProfileUpdate
 from app.core.database import get_db
@@ -116,10 +118,58 @@ def update_my_profile(payload: ProfileUpdate, db: Session = Depends(get_db), cur
     db.refresh(profile)
     return profile
 
+@router.get("/discover")
+def list_discover_profiles(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    profiles = db.query(Profile).filter(Profile.user_id != current_user.id).order_by(Profile.created_at.desc()).all()
+    results = []
+    for profile in profiles:
+        trust = (
+            db.query(TrustScore)
+            .filter(TrustScore.profile_id == profile.id)
+            .order_by(TrustScore.created_at.desc())
+            .first()
+        )
+        connection = (
+            db.query(Connection)
+            .filter(
+                ((Connection.requester_id == current_user.id) & (Connection.target_user_id == profile.user_id))
+                | ((Connection.requester_id == profile.user_id) & (Connection.target_user_id == current_user.id))
+            )
+            .order_by(Connection.created_at.desc())
+            .first()
+        )
+        results.append(
+            {
+                "id": profile.id,
+                "user_id": profile.user_id,
+                "name": profile.name,
+                "age": profile.age,
+                "bio": profile.bio,
+                "location": profile.location,
+                "profile_picture": profile.profile_picture,
+                "completion_percentage": profile.completion_percentage,
+                "interests": [{"id": interest.id, "name": interest.name} for interest in profile.interests],
+                "trust_score": trust.score if trust else None,
+                "risk_level": trust.risk_level if trust else None,
+                "connection_status": connection.status if connection else "not_connected",
+            }
+        )
+    return results
+
+
 @router.get("/{profile_id}", response_model=ProfileRead)
-def read_profile(profile_id: int, db: Session = Depends(get_db)):
+def read_profile(
+    profile_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     profile = db.query(Profile).filter(Profile.id == profile_id).first()
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found")
+    if profile.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to access this profile")
     return profile
 

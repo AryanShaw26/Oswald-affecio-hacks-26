@@ -11,6 +11,8 @@ const UNAUTH_LINKS = [
 const AUTH_LINKS = [
   { to: '/', label: 'Home' },
   { to: '/discover', label: 'Discover' },
+  { to: '/dashboard', label: 'Dashboard' },
+  { to: '/profile', label: 'Profile' },
   { to: '/chat', label: 'Chat' },
   { to: '/privacy-alerts', label: 'Privacy Alerts' },
 ];

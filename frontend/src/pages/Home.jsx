@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import api from '../services/api';
+import api, { getDiscoverProfiles } from '../services/api';
 import SafetyAlert from '../components/SafetyAlert';
 import TrustScoreCard from '../components/TrustScoreCard';
 import ProfileCard from '../components/ProfileCard';
+import useAuth from '../hooks/useAuth';
 
 const FEATURE_CARDS = [
   {
@@ -28,15 +29,33 @@ const FEATURE_CARDS = [
   },
 ];
 
-const MOCK_PROFILES = [
-  { name: 'Aria', age: 26, bio: 'Coffee enthusiast, yoga practitioner, and passionate reader.', interests: ['Yoga', 'Books', 'Travel'], score: 92, verified: true },
-  { name: 'Jordan', age: 29, bio: 'Product designer by day, amateur chef by night.', interests: ['Design', 'Cooking', 'Music'], score: 78, verified: false },
-  { name: 'Priya', age: 24, bio: 'Software engineer who loves hiking and photography.', interests: ['Hiking', 'Photography', 'Tech'], score: 88, verified: true },
-];
-
 export default function Home() {
+  const { isAuthenticated } = useAuth();
   const [apiStatus, setApiStatus] = useState(null);
   const [checking, setChecking] = useState(false);
+  const [profiles, setProfiles] = useState([]);
+  const [profilesLoading, setProfilesLoading] = useState(true);
+
+  useEffect(() => {
+    const loadProfiles = async () => {
+      if (!isAuthenticated) {
+        setProfiles([]);
+        setProfilesLoading(false);
+        return;
+      }
+
+      try {
+        const data = await getDiscoverProfiles();
+        setProfiles(data.slice(0, 3));
+      } catch {
+        setProfiles([]);
+      } finally {
+        setProfilesLoading(false);
+      }
+    };
+
+    loadProfiles();
+  }, [isAuthenticated]);
 
   const checkHealth = async () => {
     setChecking(true);
@@ -144,9 +163,26 @@ export default function Home() {
             Every profile shows a live Trust Score so you always know who you're connecting with.
           </p>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            {MOCK_PROFILES.map((p) => (
-              <ProfileCard key={p.name} {...p} />
-            ))}
+            {profilesLoading ? (
+              <p className="col-span-full text-center text-[#9F7A89]">Loading profiles...</p>
+            ) : profiles.length > 0 ? (
+              profiles.map((p) => (
+                <ProfileCard
+                  key={p.id}
+                  name={p.name}
+                  age={p.age}
+                  bio={p.bio}
+                  interests={(p.interests || []).map((interest) => interest.name || interest)}
+                  score={p.trust_score ?? p.completion_percentage ?? 0}
+                  verified={Boolean(p.trust_score && p.trust_score >= 80)}
+                  imageUrl={p.profile_picture}
+                  onConnect={() => {}} 
+                  onView={() => {}} 
+                />
+              ))
+            ) : (
+              <p className="col-span-full text-center text-[#9F7A89]">No profiles are available right now.</p>
+            )}
           </div>
           <div className="text-center">
             <Link

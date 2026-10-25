@@ -7,4 +7,5 @@ from app.models.privacy_alert import PrivacyAlert
 from app.models.reports import Report
 from app.models.blocks import Block
 from app.models.alerts import Alert
+from app.models.connection import Connection
 

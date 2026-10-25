@@ -184,9 +184,39 @@ export const getMyProfile = async () => {
   return res.data; // ProfileRead
 };
 
+export const createProfile = async (payload) => {
+  const res = await api.post('/profiles', payload);
+  return res.data;
+};
+
+export const updateMyProfile = async (payload) => {
+  const res = await api.put('/profiles/me', payload);
+  return res.data;
+};
+
 export const getProfile = async (profileId) => {
   const res = await api.get(`/profiles/${profileId}`);
   return res.data; // ProfileRead
+};
+
+export const getDiscoverProfiles = async () => {
+  const res = await api.get('/profiles/discover');
+  return res.data;
+};
+
+export const createConnectionRequest = async (targetUserId) => {
+  const res = await api.post('/connections', { target_user_id: targetUserId });
+  return res.data;
+};
+
+export const getConnectionStatus = async (targetUserId) => {
+  const res = await api.get(`/connections/status/${targetUserId}`);
+  return res.data;
+};
+
+export const getConnections = async () => {
+  const res = await api.get('/connections');
+  return res.data;
 };
 
 export default api;

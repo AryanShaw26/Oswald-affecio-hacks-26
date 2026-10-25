@@ -14,6 +14,7 @@ from app.api.routes import (
     blocks,
     alerts,
     dashboard,
+    connections,
 )
 
 
@@ -39,6 +40,7 @@ app.add_middleware(
 app.include_router(health.router)
 app.include_router(auth.router)
 app.include_router(profiles.router)
+app.include_router(connections.router)
 app.include_router(trust.router)
 app.include_router(safety.router)
 app.include_router(privacy.router)

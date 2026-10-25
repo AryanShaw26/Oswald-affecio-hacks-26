@@ -5,6 +5,8 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Discover from './pages/Discover';
+import Dashboard from './pages/Dashboard';
+import Profile from './pages/Profile';
 import Chat from './pages/Chat';
 import PrivacyAlerts from './pages/PrivacyAlerts';
 import RequireAuth from './components/RequireAuth';
@@ -19,7 +21,38 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/discover" element={<Discover />} />
+          <Route
+            path="/discover"
+            element={
+              <RequireAuth>
+                <Discover />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <RequireAuth>
+                <Dashboard />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <RequireAuth>
+                <Profile />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/profile/:id"
+            element={
+              <RequireAuth>
+                <Profile />
+              </RequireAuth>
+            }
+          />
           <Route
             path="/chat"
             element={
