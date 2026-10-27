@@ -13,6 +13,7 @@ const SEVERITY_COLORS = {
   medium: 'bg-amber-100 text-amber-800 border-amber-200',
   high: 'bg-red-100 text-red-800 border-red-200',
 };
+/*Now next is ALERT_TYPE_LABELS which is a mapping of alert types to their corresponding labels. This will be used to display a user-friendly label for each alert type in the UI.*/
 
 const ALERT_TYPE_LABELS = {
   report_created: 'Report Submitted',
